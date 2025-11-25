@@ -1,0 +1,81 @@
+# .pre-commit-config.yaml
+minimum_pre_commit_version: "3.7.0"
+# Évite de lancer les hooks sur les dossiers générés / tiers
+exclude: |
+  ^(build/|dist/|.venv/|venv/|env/|__pycache__/|third_party/|external/)
+repos:
+  # Hooks génériques utiles partout
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml # vérifie que le YAML est valide
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: detect-private-key # évite de commit des clés privées
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.11.0
+    hooks:
+      - id: yamlfmt
+        args: ["--conf", ".yamlfmt"]
+  # Lint YAML plus strict (complément de check-yaml)
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.37.1
+    hooks:
+      - id: yamllint
+  # Python : Ruff = linter + formatter ultra rapide
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.6
+    hooks:
+      # Lint + auto-fix
+      - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix]
+        types: [python]
+      # Formatage (équivalent à un "black"-like intégré)
+      - id: ruff-format
+        types: [python]
+  # Python : type-checking avec mypy (facultatif mais très utile)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.18.2
+    hooks:
+      - id: mypy
+        types: [python]
+        # À adapter à ton projet : chemins, options, etc.
+        args: [--ignore-missing-imports]
+  # C / C++ : formatage automatique
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v21.1.6
+    hooks:
+      - id: clang-format
+        types_or: [c, c++, cuda]
+  # Orthographe basique (typos dans le code, commentaires, docs…)
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v8.9.0 # À vérifier pour la dernière version
+    hooks:
+      - id: cspell
+        name: Spellcheck (French/English)
+        args:
+          # Spécifier le dictionnaire français ('fr') en plus de l'anglais ('en')
+          - --language=en,fr
+          # Vous pouvez toujours ignorer des mots globaux si nécessaire
+          # - --ignore-words-file=.cspell-ignore
+          # - --config=.cspell.json # Utiliser un fichier de configuration si besoin
+  # Détection de secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        # Nécessite un .secrets.baseline à la racine (detect-secrets scan > .secrets.baseline)
+        args: ["--baseline", ".secrets.baseline"]
+  # Validation des messages de commit (Conventional Commits)
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.3.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        # Exemple : mode strict (optionnel)
+        # args: ["--strict"]
+        args: []

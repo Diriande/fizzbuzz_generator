@@ -1,0 +1,17 @@
+extends: default
+rules:
+  # Indentation: Doit correspondre à yamlfmt.indent (ici: 2)
+  # Yamllint vérifie implicitement l'absence de tabs lorsque 'spaces' est défini.
+  indentation:
+    spaces: 2
+  # Limite de colonne: Doit correspondre à yamlfmt.column (ici: 80)
+  line-length:
+    max: 80
+    level: warning
+  # Espaces de fin:
+  trailing-spaces: enable
+  # Règles de contenu/structure (celles que yamlfmt ne gère pas)
+  document-start: disable
+  key-ordering: disable
+  hyphens: enable
+  quoted-strings: disable

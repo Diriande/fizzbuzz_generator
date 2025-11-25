@@ -1,0 +1,39 @@
+image: gcc:latest
+variables:
+  # Évite les invites interactives lors de l'installation de paquets
+  DEBIAN_FRONTEND: noninteractive
+before_script:
+  # Installation des outils nécessaires : CMake, Python (pour Conan), et le build-essential (make, g++)
+  - apt-get update && apt-get install -y cmake python3-pip build-essential
+  # Installation de Conan via pip
+  - pip3 install conan --break-system-packages
+  # Configuration du profil par défaut de Conan
+  - conan profile detect --force
+stages:
+  - lint
+  - build_and_test
+pre-commit-check:
+  stage: lint
+  image: python:3.11-slim # Utilisez une image Python car pre-commit en a besoin
+  before_script:
+    # 1. Installer pre-commit
+    - pip install pre-commit
+  script:
+    # 2. Exécuter tous les hooks sur tous les fichiers (plus sûr)
+    # L'option --show-diff-on-failure est très utile.
+    - pre-commit run --all-files --show-diff-on-failure
+    # on écrit le message de commit dans un "faux" COMMIT_EDITMSG
+    - echo "$CI_COMMIT_MESSAGE" > .git/COMMIT_EDITMSG
+    # on lance uniquement le hook de vérif conventional commit
+    - pre-commit run conventional-pre-commit \ --hook-stage commit-msg \ --commit-msg-filename .git/COMMIT_EDITMSG
+build_and_test_job:
+  stage: build_and_test
+  script:
+    # 1. Installation des dépendances (GTest) via Conan
+    - conan install . --build=missing
+    # 2. Configuration du projet CMake avec la toolchain Conan
+    - cmake --preset conan-release
+    # 3. Compilation de l'application et des tests
+    - cmake --build --preset conan-release
+    # 4. Exécution des tests unitaires
+    - ctest --preset conan-release --output-on-failure

@@ -1,0 +1,13 @@
+build/
+.vscode/
+.idea/
+.cursor/
+.cursorrules
+.cursorignore
+.cursorignorerules
+.cursorignorerulesrules
+.cursorignorerulesrulesrules
+.cursorignorerulesrulesrulesrules
+.cursorignorerulesrulesrulesrulesrules
+.cursorignorerulesrulesrulesrulesrulesrules
+CMakeUserPresets.json

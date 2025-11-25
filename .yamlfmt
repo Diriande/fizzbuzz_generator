@@ -1,0 +1,9 @@
+# .yamlfmt.yaml
+# Indique à yamlfmt la configuration de formatage
+rules:
+  # Utilise 2 espaces pour l'indentation (style très courant)
+  indent: 2
+  # Définit une limite de colonne après laquelle le contenu sera wrappé si possible
+  column: 80
+  # Utilise les espaces autour des deux points (: ) au lieu de ne pas en mettre (non recommandé)
+  # colon: true

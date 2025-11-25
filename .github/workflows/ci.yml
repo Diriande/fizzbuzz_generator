@@ -1,0 +1,116 @@
+name: C++ CI with Conan and CMake
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+jobs:
+  conventional-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # pour être tranquille si tu veux plus tard gérer une plage de commits
+      - name: Run pre-commit on files
+        uses: pre-commit/action@v3.0.1
+      - name: Check Conventional Commit message
+        run: |
+          pip install pre-commit
+          msg="$(git log -1 --pretty=%B)"
+          printf "%s" "$msg" > .git/COMMIT_EDITMSG
+
+          pre-commit run conventional-pre-commit \
+            --hook-stage commit-msg \
+            --commit-msg-filename .git/COMMIT_EDITMSG
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Utilisation de l'action officielle pre-commit/action
+      - uses: pre-commit/action@v3.0.1
+  build_and_test:
+    needs:
+      - conventional-commit
+      - pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      # 1. Configuration de l'environnement C++
+      - name: Install C++ dependencies (g++, make, cmake)
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+      # 2. Configuration de Python et Conan
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install Conan
+        run: pip install conan
+      - name: Detect Conan profile
+        run: conan profile detect --force
+      # 3. Installation des dépendances (Google Test)
+      - name: Conan Install Dependencies
+        run: conan install . --build=missing
+      # 4. Configuration de CMake
+      - name: Configure CMake
+        run: cmake --preset conan-release
+      # 5. Compilation
+      - name: Build Project
+        run: cmake --build --preset conan-release
+      # 6. Exécution des Tests
+      - name: Run Tests
+        run: ctest --preset conan-release --output-on-failure
+  build-test-sonar:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_PRESET: conan-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # 1. Configuration de l'environnement C++
+      - name: Install C++ dependencies (g++, make, cmake)
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+      # 2. Configuration de Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # 3. Installation de Conan
+      - name: Install Conan
+        run: pip install conan
+      # 4. Configuration du profil Conan
+      - name: Detect Conan profile
+        run: conan profile detect --force
+      # 5. Installation des dépendances (Google Test)
+      - name: Conan install
+        run: conan install . --build=missing
+      # 6. Configuration de CMake avec coverage + compile_commands
+      - name: Configure (CMake) with coverage + compile_commands
+        run: |
+          cmake --preset $BUILD_PRESET \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DENABLE_CODE_COVERAGE=ON
+      # 7. Compilation
+      - name: Build
+        run: cmake --build --preset $BUILD_PRESET
+      # 8. Exécution des tests
+      - name: Run tests (ctest)
+        run: ctest --preset $BUILD_PRESET
+      # 9. Génération du rapport de couverture (gcovr)
+      - name: Generate coverage report (gcovr)
+        run: |
+          pip install gcovr
+          gcovr \
+            --root . \
+            --xml \
+            --xml-pretty \
+            --sonarqube \
+            --output build/Release/coverage-sonar.xml
+      # 10. Scan SonarCloud
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
