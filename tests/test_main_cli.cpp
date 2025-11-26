@@ -35,7 +35,7 @@ std::string run_command(const std::string& cmd, int& exit_code) {
 }
 
 // ⚠️ Adapter selon ton nom d'exécutable
-static const std::string BINARY = "./fizzbuzz_generator";
+static const std::string BINARY = "./fizzbuzz_app";
 
 // ----------------------------------------------------
 // 🧪 Test 1 — Pas assez d’arguments → erreur + exit code 1
