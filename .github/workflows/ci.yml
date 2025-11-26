@@ -108,6 +108,7 @@ jobs:
             --xml-pretty \
             --sonarqube \
             --output build/Release/coverage-sonar.xml
+          ls -la build/Release/
       # 10. Scan SonarCloud
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6
