@@ -36,9 +36,7 @@ std::string run_command(const std::string& cmd, int& exit_code) {
 
 static const std::string BINARY = "./fizzbuzz_app";
 
-// ----------------------------------------------------
 // Test 1 — Pas assez d’arguments → erreur + exit code 1
-// ----------------------------------------------------
 TEST(MainCliTest, NotEnoughArguments) {
     int exit_code = 0;
     std::string out = run_command(BINARY, exit_code);
@@ -47,9 +45,7 @@ TEST(MainCliTest, NotEnoughArguments) {
     EXPECT_TRUE(out.find("Usage:") != std::string::npos);
 }
 
-// ----------------------------------------------------
 // Test 2 — Mauvais arguments numériques → exception stoi
-// ----------------------------------------------------
 TEST(MainCliTest, InvalidNumericArgument) {
     int exit_code = 0;
     std::string out = run_command(BINARY + " a 5 10 fizz buzz", exit_code);
