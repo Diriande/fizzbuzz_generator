@@ -8,27 +8,31 @@
 
 // Fonction utilitaire pour exécuter un programme et capturer stdout
 std::string run_command(const std::string& cmd, int& exit_code) {
-    std::array<char, 128> buffer{};
+    std::array<char, 256> buffer{};
     std::string output;
 
-#if defined(_WIN32)
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
-#else
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-#endif
+    // On redirige stderr vers stdout pour tout capturer
+    std::string full_cmd = cmd + " 2>&1";
 
+    FILE* pipe = popen(full_cmd.c_str(), "r");
     if (!pipe) {
-        throw std::runtime_error("Failed to run command");
+        throw std::runtime_error("popen() failed");
     }
 
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
         output += buffer.data();
     }
 
-#if defined(_WIN32)
-    exit_code = _pclose(pipe.get());
+    int status = pclose(pipe);
+
+#ifdef WEXITSTATUS
+    if (status == -1) {
+        exit_code = -1;
+    } else {
+        exit_code = WEXITSTATUS(status);
+    }
 #else
-    exit_code = WEXITSTATUS(pclose(pipe.get()));
+    exit_code = status;
 #endif
 
     return output;
