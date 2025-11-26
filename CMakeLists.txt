@@ -33,7 +33,7 @@ target_link_libraries(fizzbuzz_app PRIVATE fizzbuzz_lib)
 # --- Testing ---
 enable_testing()
 
-add_executable(fizzbuzz_test tests/test_fizzbuzz.cpp)
+add_executable(fizzbuzz_test tests/test_fizzbuzz.cpp tests/test_main_cli.cpp)
 target_link_libraries(fizzbuzz_test PRIVATE fizzbuzz_lib GTest::gtest_main)
 
 include(GoogleTest)
