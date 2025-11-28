@@ -1,6 +1,6 @@
 # FizzBuzz Enterprise Edition
 
-Une implémentation robuste, modulaire et configurable du célèbre problème "FizzBuzz" en C++11 moderne.
+Une implémentation robuste, modulaire et configurable du célèbre problème "FizzBuzz" en C++17 moderne.
 
 ## Fonctionnalités
 
@@ -16,7 +16,7 @@ Elle génère une séquence de 1 à `limit` où :
 
 ## Prérequis
 
-- Un compilateur C++ compatible C++11 (GCC, Clang, MSVC).
+- Un compilateur C++ compatible C++17 (GCC, Clang, MSVC).
 - [CMake](https://cmake.org/) (3.15+).
 - [Conan](https://conan.io/) (2.0+) pour la gestion des dépendances (Google Test).
 - L'outil de construction `make` ou équivalent.
